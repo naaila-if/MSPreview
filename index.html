@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Techcierge | Mojo Pilot Review Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --orange:#FF8643;
+  --peach:#FFC37B;
+  --purple:#CC6FEF;
+  --deep-purple:#77198E;
+  --cream:#F6EFE6;
+  --warm:#F0E4D5;
+  --pink:#FC65D8;
+  --black:#000000;
+  --blue:#676EF9;
+  --sky:#97DCFF;
+  --white:#ffffff;
+  --ink:#19141d;
+  --muted:#6e6573;
+  --soft:rgba(255,255,255,.72);
+  --line:rgba(25,20,29,.10);
+  --shadow:0 24px 70px rgba(25,20,29,.12);
+}
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  margin:0;
+  font-family:'Poppins', sans-serif;
+  background:
+    radial-gradient(circle at 8% 8%, rgba(252,101,216,.18), transparent 28%),
+    radial-gradient(circle at 88% 12%, rgba(151,220,255,.32), transparent 28%),
+    radial-gradient(circle at 58% 82%, rgba(255,134,67,.16), transparent 36%),
+    var(--cream);
+  color:var(--ink);
+}
+body.locked { overflow:hidden; }
+#login {
+  position:fixed; inset:0; z-index:99;
+  display:flex; align-items:center; justify-content:center;
+  padding:24px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(252,101,216,.32), transparent 34%),
+    radial-gradient(circle at 70% 70%, rgba(103,110,249,.26), transparent 34%),
+    var(--cream);
+}
+.login-card {
+  width:min(500px, 100%);
+  background:rgba(255,255,255,.78);
+  border:1px solid rgba(255,255,255,.84);
+  backdrop-filter: blur(22px);
+  border-radius:34px;
+  padding:42px;
+  box-shadow:var(--shadow);
+  text-align:center;
+}
+.login-card img { width:270px; max-width:80%; margin-bottom:24px; }
+.login-card h1 { margin:0 0 8px; font-size:28px; letter-spacing:-.03em; }
+.login-card p { margin:0 0 24px; color:var(--muted); }
+.login-row { display:flex; gap:10px; margin-top:18px; }
+input {
+  flex:1;
+  padding:14px 16px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  font-family:inherit;
+  outline:none;
+  background:white;
+}
+button {
+  border:0;
+  border-radius:14px;
+  padding:14px 18px;
+  font-weight:700;
+  font-family:inherit;
+  color:white;
+  background:linear-gradient(135deg, var(--deep-purple), var(--blue));
+  cursor:pointer;
+}
+.error { min-height:22px; color:#9d174d; font-size:13px; margin-top:12px; }
+#app { display:none; }
+.topbar {
+  position:sticky; top:0; z-index:20;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:18px 34px;
+  background:rgba(246,239,230,.80);
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--line);
+}
+.logo { width:228px; max-width:42vw; }
+.nav { display:flex; gap:18px; align-items:center; font-size:13px; font-weight:700; }
+.nav a { color:var(--ink); text-decoration:none; opacity:.70; }
+.nav a:hover { opacity:1; }
+.badge {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:9px 12px;
+  border-radius:999px;
+  background:white;
+  border:1px solid var(--line);
+  font-size:12px;
+  font-weight:700;
+}
+.wrap { max-width:1320px; margin:0 auto; padding:34px; }
+
+.timeline-full {
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  position:relative;
+  padding-left:32px;
+}
+.timeline-full:before {
+  content:"";
+  position:absolute;
+  left:10px; top:0; bottom:0;
+  width:2px;
+  background:linear-gradient(to bottom, var(--deep-purple), var(--blue), var(--orange));
+  opacity:.25;
+}
+.tl-item {
+  position:relative;
+  padding:20px 0 20px 28px;
+  border-bottom:1px solid var(--line);
+}
+.tl-item:last-child { border-bottom:0; }
+.tl-dot {
+  position:absolute;
+  left:-26px;
+  top:24px;
+  width:14px; height:14px;
+  border-radius:50%;
+  border:2px solid white;
+  box-shadow:0 0 0 2px var(--deep-purple);
+  background:var(--deep-purple);
+}
+.tl-dot.outreach {
+  background:var(--orange);
+  box-shadow:0 0 0 2px var(--orange);
+}
+.tl-dot.meeting {
+  background:var(--blue);
+  box-shadow:0 0 0 2px var(--blue);
+}
+.tl-dot.tl-milestone {
+  background:var(--deep-purple);
+  box-shadow:0 0 0 2px var(--deep-purple);
+}
+.tl-date {
+  font-size:12px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--muted);
+  margin-bottom:4px;
+}
+.tl-title { font-size:16px; font-weight:700; margin:0 0 4px; letter-spacing:-.02em; }
+.tl-desc { font-size:13px; color:var(--muted); margin:0; line-height:1.5; }
+.tl-tag {
+  display:inline-flex;
+  padding:3px 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:700;
+  margin-left:8px;
+  vertical-align:middle;
+}
+.tl-tag.pilot { background:rgba(119,25,142,.12); color:var(--deep-purple); }
+.tl-tag.reach { background:rgba(255,134,67,.14); color:#b45309; }
+.tl-tag.sync { background:rgba(103,110,249,.12); color:var(--blue); }
+.tl-legend {
+  display:flex; gap:18px; margin-bottom:18px; flex-wrap:wrap;
+}
+.tl-legend-item {
+  display:flex; align-items:center; gap:6px;
+  font-size:12px; font-weight:700; color:var(--muted);
+}
+.tl-legend-dot {
+  width:10px; height:10px; border-radius:50%;
+}
+
+.hero {
+  position:relative;
+  overflow:hidden;
+  min-height:430px;
+  display:grid;
+  grid-template-columns:1.2fr .8fr;
+  gap:28px;
+  align-items:stretch;
+  padding:42px;
+  border-radius:42px;
+  background:rgba(255,255,255,.68);
+  border:1px solid rgba(255,255,255,.86);
+  box-shadow:var(--shadow);
+}
+.hero:before {
+  content:"";
+  position:absolute; width:560px; height:560px; right:-150px; top:-150px;
+  background:radial-gradient(circle, rgba(252,101,216,.58), rgba(103,110,249,.36), transparent 68%);
+  filter:blur(18px);
+  opacity:.86;
+}
+.hero-content { position:relative; z-index:2; }
+.eyebrow {
+  text-transform:uppercase; letter-spacing:.14em;
+  color:var(--deep-purple);
+  font-weight:800; font-size:12px;
+  margin-bottom:18px;
+}
+h1 {
+  font-size: clamp(42px, 7vw, 82px);
+  line-height:.94;
+  letter-spacing:-.06em;
+  margin:0 0 22px;
+}
+.hero p {
+  font-size:18px; line-height:1.6;
+  max-width:760px;
+  color:var(--muted);
+}
+.hero-stat {
+  position:relative; z-index:2;
+  background:rgba(255,255,255,.75);
+  border:1px solid rgba(255,255,255,.92);
+  border-radius:32px;
+  padding:32px;
+  display:flex; flex-direction:column; justify-content:center;
+}
+.hero-number {
+  font-size: clamp(52px, 7vw, 96px);
+  line-height:.9;
+  font-weight:800;
+  letter-spacing:-.07em;
+  color:var(--deep-purple);
+}
+.hero-label { font-size:18px; color:var(--muted); margin-top:16px; line-height:1.5; }
+.section-title {
+  margin:58px 0 18px;
+  display:flex; justify-content:space-between; align-items:end; gap:20px;
+}
+.section-title h2 {
+  margin:0;
+  font-size:34px;
+  letter-spacing:-.04em;
+}
+.section-title p { margin:0; color:var(--muted); max-width:680px; }
+.card {
+  background:rgba(255,255,255,.76);
+  border:1px solid rgba(255,255,255,.88);
+  border-radius:28px;
+  padding:24px;
+  box-shadow:0 12px 40px rgba(25,20,29,.07);
+}
+.kpis {
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0,1fr));
+  gap:18px;
+}
+.kpi .label { color:var(--muted); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
+.kpi .value { font-size:42px; line-height:1; font-weight:800; letter-spacing:-.05em; margin:16px 0 10px; }
+.kpi .note { color:var(--muted); font-size:13px; line-height:1.45; }
+.summary-grid {
+  display:grid;
+  grid-template-columns:1fr .9fr;
+  gap:18px;
+}
+.summary-table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:15px;
+}
+.summary-table th, .summary-table td {
+  padding:16px 14px;
+  text-align:right;
+  border-bottom:1px solid var(--line);
+}
+.summary-table th:first-child,.summary-table td:first-child { text-align:left; }
+.summary-table th {
+  color:var(--muted);
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.summary-table tr:last-child td { border-bottom:0; }
+.change-up { color:var(--deep-purple); font-weight:800; }
+.change-down { color:#0f766e; font-weight:800; }
+.takeaway {
+  background:linear-gradient(135deg, rgba(119,25,142,.95), rgba(103,110,249,.94));
+  color:white;
+}
+.takeaway h3 { font-size:26px; margin:0 0 14px; letter-spacing:-.04em; }
+.takeaway p { margin:0; line-height:1.7; opacity:.92; }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.chart-card { min-height:420px; }
+.chart-card h3 { margin-top:0; }
+.chart-card canvas { width:100% !important; height:330px !important; }
+.table {
+  width:100%;
+  border-collapse:collapse;
+  overflow:hidden;
+  border-radius:18px;
+  font-size:14px;
+}
+.table th, .table td {
+  padding:14px 12px;
+  text-align:right;
+  border-bottom:1px solid var(--line);
+}
+.table th:first-child, .table td:first-child { text-align:left; }
+.table th {
+  color:var(--muted);
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.table tr:last-child td { border-bottom:0; }
+.pill {
+  display:inline-flex;
+  padding:7px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  background:rgba(252,101,216,.14);
+  color:var(--deep-purple);
+  margin-left:8px;
+}
+.timeline {
+  display:grid;
+  grid-template-columns:repeat(5, 1fr);
+  gap:14px;
+}
+.milestone {
+  position:relative;
+  padding:22px;
+  min-height:160px;
+}
+.milestone .dot {
+  width:18px; height:18px; border-radius:50%;
+  background:linear-gradient(135deg,var(--orange),var(--pink),var(--blue));
+  margin-bottom:18px;
+}
+.milestone h3 { margin:0 0 8px; font-size:16px; }
+.milestone p { margin:0; color:var(--muted); font-size:13px; line-height:1.5; }
+.insights {
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:18px;
+}
+.insight h3 { margin:0 0 12px; font-size:20px; letter-spacing:-.03em; }
+.insight p { margin:0; color:var(--muted); line-height:1.6; font-size:14px; }
+.callout {
+  margin-top:24px;
+  padding:28px;
+  border-radius:28px;
+  color:white;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,195,123,.35), transparent 36%),
+    linear-gradient(135deg, var(--deep-purple), var(--blue));
+}
+.callout h2 { margin:0 0 10px; font-size:34px; letter-spacing:-.04em; }
+.callout p { margin:0; line-height:1.6; opacity:.92; }
+footer {
+  margin:60px 0 20px;
+  color:var(--muted);
+  display:flex; justify-content:space-between; gap:20px;
+  font-size:13px;
+}
+
+.renewal-btn {
+  display:inline-flex; align-items:center; gap:7px;
+  padding:9px 16px;
+  border-radius:999px;
+  background:linear-gradient(135deg, var(--deep-purple), var(--blue));
+  color:white;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  border:0;
+  font-family:inherit;
+  transition:opacity .2s;
+}
+.renewal-btn:hover { opacity:.88; }
+#renewal-section { display:none !important; }
+#renewal-section.visible { display:block !important; }
+#renewal-section.visible { display:block; }
+.renewal-hero {
+  background:linear-gradient(135deg, rgba(119,25,142,.96), rgba(103,110,249,.94));
+  border-radius:42px;
+  padding:48px;
+  color:white;
+  margin-bottom:18px;
+}
+.renewal-hero h2 { font-size:42px; letter-spacing:-.05em; margin:0 0 12px; }
+.renewal-hero p { margin:0; opacity:.88; font-size:18px; line-height:1.6; }
+.renewal-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px; }
+.renewal-number { font-size:64px; font-weight:800; letter-spacing:-.06em; line-height:1; margin:12px 0 8px; }
+.renewal-scope { list-style:none; margin:0; padding:0; }
+.renewal-scope li { padding:10px 0; border-bottom:1px solid var(--line); font-size:14px; color:var(--muted); display:flex; align-items:center; gap:10px; }
+.renewal-scope li:last-child { border-bottom:0; }
+.renewal-scope li:before { content:"✓"; color:var(--deep-purple); font-weight:800; font-size:14px; }
+.renewal-scope li.out:before { content:"→"; color:var(--orange); }
+.renewal-scope li.hourly:before { content:"$"; color:var(--blue); }
+.process-steps { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+.process-step { text-align:center; padding:28px 20px; }
+.step-num { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--deep-purple),var(--blue)); color:white; font-weight:800; font-size:16px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
+.process-step h4 { margin:0 0 8px; font-size:16px; letter-spacing:-.02em; }
+.process-step p { margin:0; color:var(--muted); font-size:13px; line-height:1.5; }
+
+@media (max-width:980px) {
+  .renewal-btn { font-size:11px; padding:7px 12px; }
+  .hero, .grid-2, .summary-grid { grid-template-columns:1fr; }
+  .kpis, .insights, .timeline { grid-template-columns:1fr 1fr; }
+  .nav { display:flex; overflow-x:auto; -webkit-overflow-scrolling:touch; gap:12px; padding:10px 16px; border-top:1px solid var(--line); flex-wrap:nowrap; scrollbar-width:none; }
+  .nav::-webkit-scrollbar { display:none; }
+}
+@media (max-width:640px) {
+  .wrap { padding:18px; }
+  .topbar { padding:14px 18px; }
+  .hero { padding:26px; border-radius:30px; }
+  .kpis, .insights, .timeline { grid-template-columns:1fr; }
+  .login-row { flex-direction:column; }
+}
+</style>
+</head>
+<body class="locked">
+
+<div id="login">
+  <div class="login-card">
+    <img src="logo.png" alt="Techcierge logo" style="mix-blend-mode:multiply;">
+    <h1>Mojo Pilot Review Dashboard</h1>
+    <p>Confidential client review. Enter the dashboard password to continue.</p>
+    <div class="login-row">
+      <input id="password" type="password" placeholder="Password" onkeydown="if(event.key==='Enter') unlock()">
+      <button onclick="unlock()">Enter</button>
+    </div>
+    <div id="error" class="error"></div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <img src="logo.png" class="logo" style="mix-blend-mode:multiply;" alt="Techcierge logo">
+    <div class="nav">
+      <a href="#summary">Summary</a>
+      <a href="#headcount">Monthly Breakdown</a>
+      <a href="#timeline">Timeline</a>
+      <a href="#support">Support</a>
+      <a href="#cost">Cost</a>
+      <a href="#value">Hourly Rate</a>
+      <span class="badge">Confidential | June 2026</span>
+      <button class="renewal-btn" onclick="toggleRenewal()">✦ Renewal Options</button>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-content">
+        <div class="eyebrow">Pilot Review | October 2025 - May 2026</div>
+        <h1>Mojo Supermarket | 7-Month Pilot Review</h1>
+        <p>
+          This dashboard summarizes how the supported team, ticket volume, support hours,
+          and cost per supported user changed during the pilot period.
+        </p>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-number">65 → 112</div>
+        <div class="hero-label">Users supported by Techcierge during the pilot</div>
+        <p style="font-size:14px;margin-top:18px;">A 72% increase from October 2025 to May 2026.</p>
+      </div>
+    </section>
+
+    <div class="section-title" id="summary">
+      <div>
+        <h2>Pilot Summary</h2>
+        <p>A before-and-after view of what changed from the start of the pilot to May 2026.</p>
+      </div>
+    </div>
+
+    <section class="summary-grid">
+      <div class="card">
+        <table class="summary-table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Oct 2025</th>
+              <th>May 2026</th>
+              <th>Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Users Supported</strong></td>
+              <td>65</td>
+              <td>112</td>
+              <td class="change-up">+72%</td>
+            </tr>
+            <tr>
+              <td><strong>Tickets</strong></td>
+              <td>72</td>
+              <td>100</td>
+              <td class="change-up">+39%</td>
+            </tr>
+            <tr>
+              <td><strong>Support Hours</strong></td>
+              <td>106</td>
+              <td>123.5</td>
+              <td class="change-up">+17%</td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <div class="section-title">
+      <div>
+        <h2>Executive Snapshot</h2>
+        <p>Four numbers to ground the discussion.</p>
+      </div>
+    </div>
+
+    <section class="kpis">
+      <div class="card kpi">
+        <div class="label">Users Supported</div>
+        <div class="value">112</div>
+        <div class="note">May 2026, up from 65 in October</div>
+      </div>
+      <div class="card kpi">
+        <div class="label">Peak Tickets</div>
+        <div class="value">130</div>
+        <div class="note">April 2026 support volume</div>
+      </div>
+      <div class="card kpi">
+        <div class="label">Peak Support Hours</div>
+        <div class="value">183</div>
+        <div class="note">February 2026, including maintenance</div>
+      </div>
+
+    </section>
+
+    <div class="section-title" id="headcount">
+      <div>
+        <h2>Monthly Breakdown</h2>
+        <p>Full-time employees and freelancers supported each month, with charges by type.</p>
+      </div>
+    </div>
+
+    <section class="grid-2">
+      <div class="card chart-card">
+        <h3>FTE vs Freelancers by Month</h3>
+        <canvas id="headcountChart"></canvas>
+      </div>
+      <div class="card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>FTE</th>
+              <th>Freelancers</th>
+              <th>Total</th>
+              <th>FTE Charges</th>
+              <th>FL Charges</th>
+            </tr>
+          </thead>
+          <tbody id="headcountRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="section-title" id="timeline">
+      <div>
+        <h2>Timeline</h2>
+        <p>Pilot milestones and renewal outreach in sequence.</p>
+      </div>
+    </div>
+
+    <section class="card">
+      <div class="tl-legend">
+        <div class="tl-legend-item"><div class="tl-legend-dot" style="background:var(--deep-purple)"></div> Pilot milestone</div>
+        <div class="tl-legend-item"><div class="tl-legend-dot" style="background:var(--orange)"></div> Techcierge outreach</div>
+        <div class="tl-legend-item"><div class="tl-legend-dot" style="background:var(--blue)"></div> Live meeting / sync</div>
+      </div>
+      <div class="timeline-full">
+
+        <div class="tl-item">
+          <div class="tl-dot tl-milestone"></div>
+          <div class="tl-date">October 2025</div>
+          <div class="tl-title">Pilot begins <span class="tl-tag pilot">Pilot</span></div>
+          <p class="tl-desc">MSP model launches with 65 supported users. Agreement signed October 2, 2025. Pilot period set to conclude April 1, 2026.</p>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-dot tl-milestone"></div>
+          <div class="tl-date">February 2026</div>
+          <div class="tl-title">Peak support activity <span class="tl-tag pilot">Pilot</span></div>
+          <p class="tl-desc">Support hours peak at 183 hours including maintenance. Supported user count grows to 77.</p>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-dot outreach"></div>
+          <div class="tl-date">March 12, 2026</div>
+          <div class="tl-title">Techcierge initiates pilot review <span class="tl-tag reach">Outreach</span></div>
+          <p class="tl-desc">Techcierge emails Missy and Ali proactively to schedule a pilot review before the April 1 contract end date. Three weeks before the first invoice crosses $8,500. Missy confirms receipt and says she will review on Monday.</p>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-dot tl-milestone"></div>
+          <div class="tl-date">March 2026</div>
+          <div class="tl-title">First invoice above cap reference <span class="tl-tag pilot">Pilot</span></div>
+          <p class="tl-desc">Monthly MSP charges reach $8,722 as supported users grow to 98. Per-user pricing model reflects headcount growth per signed agreement.</p>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-dot outreach"></div>
+          <div class="tl-date">March 31, 2026</div>
+          <div class="tl-title">Updated agreement and pilot recap sent <span class="tl-tag reach">Outreach</span></div>
+          <p class="tl-desc">Techcierge sends full pilot recap and updated agreement the day before the pilot expires. Explicitly flags that the pilot concludes the following day. Missy responds she will be out for spring break and asks to connect April 15.</p>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-dot tl-milestone"></div>
+          <div class="tl-date">April 1, 2026</div>
+          <div class="tl-title">Pilot period ends — Techcierge continues supporting <span class="tl-tag pilot">Pilot</span></div>
+          <p class="tl-desc">Original agreement concludes. No signed renewal in place. Techcierge continues full service delivery without interruption while renewal discussions continue.</p>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-dot sync"></div>
+          <div class="tl-date">April 15, 2026</div>
+          <div class="tl-title">Operational sync with Missy <span class="tl-tag sync">Meeting</span></div>
+          <p class="tl-desc">Full operational review covering workflow, scope boundaries, onboarding processes, Apple Business Manager migration, and monthly sync cadence. Active, collaborative relationship continues post-pilot.</p>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-dot outreach"></div>
+          <div class="tl-date">April 27, 2026</div>
+          <div class="tl-title">Mojo requests extension — Techcierge agrees <span class="tl-tag reach">Outreach</span></div>
+          <p class="tl-desc">Missy asks to extend the prior contract or work under it until May 8. Techcierge agrees immediately with no conditions, continuing full support.</p>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-dot sync"></div>
+          <div class="tl-date">June 6, 2026</div>
+          <div class="tl-title">Pilot review and renewal discussion <span class="tl-tag sync">Meeting</span></div>
+          <p class="tl-desc">Both parties meet to review the pilot, align on the cap provision, and determine a go-forward structure.</p>
+        </div>
+
+      </div>
+    </section>
+
+
+    <div class="section-title" id="support">
+      <div>
+        <h2>Support Activity</h2>
+        <p>Ticket volume and support hours across the pilot period.</p>
+      </div>
+    </div>
+
+    <section class="grid-2">
+      <div class="card chart-card">
+        <h3>Tickets vs Support Hours</h3>
+        <canvas id="supportActivity"></canvas>
+      </div>
+      <div class="card chart-card">
+        <h3>Tickets Per Supported User</h3>
+        <canvas id="ticketsPerUser"></canvas>
+      </div>
+    </section>
+
+    <div class="section-title" id="cost">
+      <div>
+        <h2>Cost Context</h2>
+        <p>Monthly MSP charges compared with the pilot cap reference, and monthly cost per supported user.</p>
+      </div>
+    </div>
+
+    <section class="grid-2">
+      <div class="card chart-card">
+        <h3>Monthly MSP Charges vs Pilot Cap Reference</h3>
+        <canvas id="revenueCap"></canvas>
+      </div>
+
+    </section>
+
+    <div class="section-title" id="value">
+      <div>
+        <h2>What You're Paying Per Hour</h2>
+        <p>The MSP model is billed per user, not per hour. This shows what that translates to on an hourly basis each month, compared to Techcierge's standard project rate of $160/hr.</p>
+      </div>
+    </div>
+
+    <section class="grid-2">
+      <div class="card chart-card">
+        <h3>Effective Hourly Rate vs Standard Rate ($160/hr)</h3>
+        <canvas id="effectiveRate"></canvas>
+      </div>
+      <div class="card">
+        <h3>How to read this</h3>
+        <p style="color:var(--muted);line-height:1.7;">
+          The effective hourly rate is calculated by dividing the monthly MSP charge by total recorded support hours, including the recurring 5 hours of monthly maintenance built into the model.
+        </p>
+        <p style="color:var(--muted);line-height:1.7;margin-top:14px;">
+          Across all 8 months of the pilot, the effective rate ranged from $41/hr to $84/hr. Techcierge's standard project rate is $160/hr. The MSP model delivered support at a significant discount to that rate every single month.
+        </p>
+      </div>
+    </section>
+
+    <div class="section-title" id="hourly-detail">
+      <div>
+        <h2>Monthly Hourly Rate Breakdown</h2>
+        <p>MSP charges and effective hourly rate by month.</p>
+      </div>
+    </div>
+
+    <section class="card">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Hours</th>
+            <th>Headcount</th>
+            <th>By Type</th>
+            <th>Total Billed</th>
+            <th>At $160/hr Would Be</th>
+            <th>Savings</th>
+          </tr>
+        </thead>
+        <tbody id="hourlyRows"></tbody>
+      </table>
+    </section>    </section>
+
+    <div id="renewal-section">
+      <div class="section-title">
+        <div>
+          <h2>Renewal Options</h2>
+          <p>Proposed go-forward structure for Mojo Supermarket.</p>
+        </div>
+      </div>
+
+      <div class="renewal-hero">
+        <h2>$8,500 / month flat</h2>
+        <p>A single monthly fee covering up to 50 hours plus recurring maintenance.<br>Predictable for Mojo. Sustainable for Techcierge. No user counting. No surprises.</p>
+      </div>
+
+      <div class="renewal-grid">
+        <div class="card">
+          <h3 style="margin-top:0;">What's included</h3>
+          <ul class="renewal-scope">
+            <li>Helpdesk and remote end-user support</li>
+            <li>Network monitoring and maintenance</li>
+            <li>Security patching</li>
+            <li>Endpoint management and antivirus oversight</li>
+            <li>User onboarding and offboarding</li>
+            <li>Laptop patching</li>
+            <li>Compliance and MSA oversight</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0;">Billing structure</h3>
+          <ul class="renewal-scope">
+            <li>Up to 50 hours/month included</li>
+            <li>Recurring maintenance included</li>
+            <li class="hourly">Device setup: $185 per device (laptops, printers, iPads, networking equipment, Zoom Room hardware). $150 per device for 10 or more.</li>
+            <li class="out">Hardware and software management: Mojo-owned</li>
+            <li class="out">License and renewal tracking: Mojo-owned</li>
+            <li class="out">Zoom and software administration: Mojo-owned</li>
+            <li class="out">Administrative work (license management, software tracking, renewals): can move to Mojo</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:18px;">
+        <h3 style="margin-top:0;">Out-of-scope process</h3>
+        <div class="process-steps">
+          <div class="process-step">
+            <div class="step-num">1</div>
+            <h4>Request comes in</h4>
+            <p>Techcierge identifies request as outside defined core scope.</p>
+          </div>
+          <div class="process-step">
+            <div class="step-num">2</div>
+            <h4>Written flag sent</h4>
+            <p>Techcierge sends scope and estimated hours to designated Mojo approver before any work starts.</p>
+          </div>
+          <div class="process-step">
+            <div class="step-num">3</div>
+            <h4>Approval required</h4>
+            <p>No out-of-scope work proceeds without written approval. Any hourly work counts toward the $8,500 ceiling.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:32px;">
+        <div>
+          <h2>Service Scope</h2>
+          <p>What Techcierge owns, what Mojo owns, and what's hourly. <strong>Note: this scope is still being defined together.</strong> Any knowledge transfer required for Mojo to take ownership of services will be provided at no charge — we just need to know who on your team will own each area.</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:18px;overflow-x:auto;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Service Area</th>
+              <th style="color:var(--deep-purple)">Techcierge</th>
+              <th style="color:var(--orange)">Mojo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Email</strong></td>
+              <td>Configuration, sync issues, account setup, groups, distribution lists, email security</td>
+              <td style="color:var(--muted)">—</td>
+            </tr>
+            <tr>
+              <td><strong>Passwords & Access</strong></td>
+              <td>Password resets, account lockouts, MFA setup, access provisioning</td>
+              <td style="color:var(--muted)">—</td>
+            </tr>
+            <tr>
+              <td><strong>Software</strong></td>
+              <td>Advise on purchases, deploy via Addigy, maintain deployments</td>
+              <td>License tracking, renewals, payments, inventory sheet. Initial Addigy setup = project</td>
+            </tr>
+            <tr>
+              <td><strong>Hardware</strong></td>
+              <td>Advise on purchases, Apple conversations, device setup ($185/device), patching and monitoring via Addigy</td>
+              <td>Inventory tracking, warranty claims, repairs, purchasing</td>
+            </tr>
+            <tr>
+              <td><strong>Printers & Scanners</strong></td>
+              <td>Troubleshooting. New printer = $185 device setup fee</td>
+              <td style="color:var(--muted)">—</td>
+            </tr>
+            <tr>
+              <td><strong>Zoom</strong></td>
+              <td>Zoom Rooms setup and management</td>
+              <td>User licenses, seat management, account admin</td>
+            </tr>
+            <tr>
+              <td><strong>Google Workspace</strong></td>
+              <td>Full administration</td>
+              <td style="color:var(--muted)">—</td>
+            </tr>
+            <tr>
+              <td><strong>Slack</strong></td>
+              <td>Full administration</td>
+              <td style="color:var(--muted)">—</td>
+            </tr>
+            <tr>
+              <td><strong>Onboarding & Offboarding</strong></td>
+              <td>Full process including Mojo-managed software if in documented flow</td>
+              <td>Maintain checklist, flag changes to flow</td>
+            </tr>
+            <tr>
+              <td><strong>Cybersecurity</strong></td>
+              <td>Phishing tests, security training, antivirus, EDR management</td>
+              <td style="color:var(--muted)">—</td>
+            </tr>
+            <tr>
+              <td><strong>Network</strong></td>
+              <td>Monitoring, maintenance, firewall, Wi-Fi, connectivity</td>
+              <td style="color:var(--muted)">—</td>
+            </tr>
+            <tr>
+              <td><strong>Backups</strong></td>
+              <td>Data restoration via Dropsuite (hourly, approval required)</td>
+              <td>Backup tool procurement and management</td>
+            </tr>
+            <tr>
+              <td><strong>On-Site Support</strong></td>
+              <td>Coordinate with local NYC provider, single point of contact</td>
+              <td>Negotiate SLA with local provider, cover Techcierge travel for on-site visits</td>
+            </tr>
+            <tr>
+              <td><strong>Compliance & MSAs</strong></td>
+              <td>Ongoing compliance maintenance and SOC II oversight included in helpdesk. New policy builds or implementations required by a client MSA require written approval before work begins.</td>
+              <td>Provide written approval before any new compliance policy or MSA-driven implementation is initiated. Share relevant MSA requirements proactively.</td>
+            </tr>
+            <tr>
+              <td><strong>Strategic IT Planning</strong></td>
+              <td colspan="2" style="text-align:center;color:var(--muted);font-style:italic;">Joint — reviewed at QBR</td>
+            </tr>
+            <tr>
+              <td><strong>Helpdesk Ticketing</strong></td>
+              <td>Manage platform, reporting, Mojo ticket visibility</td>
+              <td style="color:var(--muted)">—</td>
+            </tr>
+            <tr>
+              <td><strong>Mobile Devices</strong></td>
+              <td>Advise on purchases, MDM enrollment if applicable</td>
+              <td>Device tracking, carrier and plan management, repairs</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card" style="margin-bottom:18px;">
+        <h3 style="margin-top:0;">Hourly work — $160/hr, written approval required</h3>
+        <p style="color:var(--muted);font-size:14px;margin-bottom:14px;">All hourly work counts toward the $8,500 monthly ceiling. Written estimate required before work begins.</p>
+        <ul class="renewal-scope">
+          <li class="hourly">Drive restoration and data recovery beyond basic Google account restore</li>
+          <li class="hourly">Initial Addigy setup for new software deployment</li>
+          <li class="hourly">Google Slides to PowerPoint conversion and cross-platform document formatting fixes</li>
+          <li class="hourly">Any project work not covered by core MSP scope</li>
+          <li class="hourly">Any work outside the defined service areas above</li>
+        </ul>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:18px;">
+        <div class="card takeaway">
+          <h3>Billing commitment</h3>
+          <p>Monthly fee is a flat $8,500. Out-of-scope work requires written approval and a separate estimate before work begins. Techcierge will not perform out-of-scope work without prior written authorization from the designated Mojo approver.</p>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0;">At a glance</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;">
+            <div>
+              <div style="color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">Monthly Fee</div>
+              <div style="font-size:36px;font-weight:800;letter-spacing:-.05em;color:var(--deep-purple);">$8,500</div>
+            </div>
+            <div>
+              <div style="color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">Active Hours</div>
+              <div style="font-size:36px;font-weight:800;letter-spacing:-.05em;color:var(--deep-purple);">50/mo</div>
+            </div>
+            <div>
+              <div style="color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">Hourly Rate</div>
+              <div style="font-size:36px;font-weight:800;letter-spacing:-.05em;color:var(--deep-purple);">$160</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <footer>
+      <div>Prepared by Techcierge</div>
+      <div>Confidential | Mojo Supermarket Pilot Review | June 2026</div>
+    </footer>
+  </main>
+</div>
+
+<script>
+const DATA = {"months": ["Oct 2025", "Nov 2025", "Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026", "Apr 2026", "May 2026"], "shortMonths": ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May"], "usersSupported": [65, 62, 58, 57, 77, 98, 113, 112], "revenue": [6712.58, 6541.0, 5930.01, 6120.64, 7597.1, 8722.57, 10196.0, 10399.37], "tickets": [72, 72, 80, 74, 97, 115, 130, 100], "hours": [106, 87, 104, 99, 183.25, 141, 151, 123.5], "cap": 8500, "standardRate": 160, "costPerUser": [103.27, 105.5, 102.24, 107.38, 98.66, 89.01, 90.23, 92.85], "effectiveRate": [63.33, 75.18, 57.02, 61.82, 41.46, 61.86, 67.52, 84.21], "ticketsPerUser": [1.11, 1.16, 1.38, 1.3, 1.26, 1.17, 1.15, 0.89], "hoursPerUser": [1.63, 1.4, 1.79, 1.74, 2.38, 1.44, 1.34, 1.1], "fte": [35, 35, 31, 34, 43, 50, 58, 63], "freelancers": [30, 27, 27, 23, 34, 48, 55, 49]};
+const money = v => '$' + Number(v).toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0});
+const money2 = v => '$' + Number(v).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+const fmt = v => Number(v).toLocaleString(undefined, {maximumFractionDigits:2});
+
+function toggleRenewal() {
+  const section = document.getElementById('renewal-section');
+  section.classList.toggle('visible');
+  if (section.classList.contains('visible')) {
+    setTimeout(() => section.scrollIntoView({behavior:'smooth', block:'start'}), 100);
+  }
+}
+
+function unlock() {
+  const pw = document.getElementById('password').value;
+  if (pw === 'mojo2026') {
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.body.classList.remove('locked');
+    initCharts();
+  } else {
+    document.getElementById('error').innerText = 'Incorrect password';
+  }
+}
+
+function initCharts() {
+Chart.defaults.font.family = 'Poppins';
+Chart.defaults.color = '#6e6573';
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.tooltip.backgroundColor = '#19141d';
+Chart.defaults.plugins.tooltip.padding = 12;
+Chart.defaults.plugins.tooltip.cornerRadius = 12;
+
+function chartOptions() {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode:'index', intersect:false },
+    plugins: {
+      legend: { position:'bottom' },
+    },
+    scales: {
+      x: { grid: { display:false } },
+      y: { grid: { color:'rgba(25,20,29,.08)' }, beginAtZero:true }
+    }
+  };
+}
+
+new Chart(document.getElementById('supportActivity'), {
+  type:'line',
+  data: {
+    labels: DATA.shortMonths,
+    datasets: [
+      { label:'Tickets', data:DATA.tickets, borderColor:'#77198E', tension:.38, borderWidth:3, pointRadius:4 },
+      { label:'Support Hours', data:DATA.hours, borderColor:'#FF8643', tension:.38, borderWidth:3, pointRadius:4 }
+    ]
+  },
+  options: chartOptions()
+});
+
+new Chart(document.getElementById('ticketsPerUser'), {
+  type:'bar',
+  data: {
+    labels: DATA.shortMonths,
+    datasets: [
+      { label:'Tickets Per Supported User', data:DATA.ticketsPerUser, backgroundColor:'#97DCFF', borderRadius:12 }
+    ]
+  },
+  options: chartOptions()
+});
+
+new Chart(document.getElementById('revenueCap'), {
+  type:'line',
+  data: {
+    labels: DATA.shortMonths,
+    datasets: [
+      { label:'Monthly MSP Charges', data:DATA.revenue, borderColor:'#77198E', backgroundColor:'rgba(119,25,142,.08)', tension:.36, borderWidth:3, fill:true, pointRadius:4 },
+      { label:'$8,500 Pilot Cap Reference', data:DATA.revenue.map(() => DATA.cap), borderColor:'#FC65D8', borderDash:[8,8], borderWidth:2, pointRadius:0 }
+    ]
+  },
+  options: {
+    ...chartOptions(),
+    scales: {
+      x: { grid: { display:false } },
+      y: { beginAtZero:true, ticks: { callback: value => '$' + value.toLocaleString() }, grid: { color:'rgba(25,20,29,.08)' } }
+    },
+    plugins: {
+      legend: { position:'bottom' },
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + money2(ctx.parsed.y) } }
+    }
+  }
+});
+
+
+
+new Chart(document.getElementById('effectiveRate'), {
+  type:'line',
+  data: {
+    labels: DATA.shortMonths,
+    datasets: [
+      { label:'Effective Support Rate', data:DATA.effectiveRate, borderColor:'#FF8643', backgroundColor:'rgba(255,134,67,.12)', tension:.38, borderWidth:3, fill:true, pointRadius:4 },
+      { label:'Standard Techcierge Rate ($160/hr)', data:DATA.effectiveRate.map(() => DATA.standardRate), borderColor:'#77198E', borderDash:[8,8], borderWidth:2, pointRadius:0 }
+    ]
+  },
+  options: {
+    ...chartOptions(),
+    scales: {
+      x: { grid: { display:false } },
+      y: { beginAtZero:true, ticks: { callback: value => '$' + value + '/hr' }, grid: { color:'rgba(25,20,29,.08)' } }
+    },
+    plugins: {
+      legend: { position:'bottom' },
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + money2(ctx.parsed.y) + '/hr' } }
+    }
+  }
+});
+
+// Headcount chart
+new Chart(document.getElementById('headcountChart'), {
+  type:'bar',
+  data: {
+    labels: DATA.shortMonths,
+    datasets: [
+      { label:'Full-Time Employees', data:DATA.fte, backgroundColor:'#77198E', borderRadius:8, stack:'headcount' },
+      { label:'Freelancers', data:DATA.freelancers, backgroundColor:'#97DCFF', borderRadius:8, stack:'headcount' }
+    ]
+  },
+  options: {
+    ...chartOptions(),
+    scales: {
+      x: { grid: { display:false }, stacked:true },
+      y: { grid: { color:'rgba(25,20,29,.08)' }, beginAtZero:true, stacked:true }
+    }
+  }
+});
+
+// Headcount table
+const hcTbody = document.getElementById('headcountRows');
+DATA.months.forEach((m, i) => {
+  const fteCharge = DATA.fte[i] * 110;
+  const flCharge = DATA.freelancers[i] * 90;
+  hcTbody.insertAdjacentHTML('beforeend', `
+    <tr>
+      <td><strong>${m}</strong></td>
+      <td>${DATA.fte[i]}</td>
+      <td>${DATA.freelancers[i]}</td>
+      <td><strong>${DATA.fte[i] + DATA.freelancers[i]}</strong></td>
+      <td style="color:var(--deep-purple)">${money2(fteCharge)}</td>
+      <td style="color:var(--blue)">${money2(flCharge)}</td>
+    </tr>
+  `);
+});
+
+// Hourly breakdown table
+const hourlyTbody = document.getElementById('hourlyRows');
+DATA.months.forEach((m, i) => {
+  const savings = (DATA.standardRate - DATA.effectiveRate[i]) * DATA.hours[i];
+  const fteCharge = DATA.fte[i] * 110;
+  const flCharge = DATA.freelancers[i] * 90;
+  const wouldHaveBeen = DATA.hours[i] * DATA.standardRate;
+  hourlyTbody.insertAdjacentHTML('beforeend', `
+    <tr>
+      <td><strong>${m}</strong></td>
+      <td>${fmt(DATA.hours[i])} hrs</td>
+      <td style="color:var(--deep-purple);font-weight:700">${DATA.fte[i]} FTE<br><span style="color:var(--blue);font-size:12px">${DATA.freelancers[i]} FL</span></td>
+      <td><span style="color:var(--deep-purple);font-weight:600">${money2(fteCharge)}</span><br><span style="color:var(--blue);font-size:12px">${money2(flCharge)}</span></td>
+      <td><strong>${money2(DATA.revenue[i])}</strong></td>
+      <td style="color:var(--muted);text-decoration:line-through">${money(wouldHaveBeen)}</td>
+      <td class="change-down"><strong>${money(savings)} saved</strong></td>
+    </tr>
+  `);
+});
+}
+</script>
+</body>
+</html>
